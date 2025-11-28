@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+*.whl
+
+# Python cache / logs / runtime files
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+coverage.xml
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Django / Flask stuff
+*.db
+*.sqlite3
+instance/
+.mypy_cache/
+.pytest_cache/
+
+# Environment variable / secret files
+.env
+*.env
+.env.*
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# pip / poetry
+pip-wheel-metadata/
+poetry.lock
+Pipfile.lock
+
+# Temporary / Misc
+.DS_Store
+Thumbs.db
+/tmp/
