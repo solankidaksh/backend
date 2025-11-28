@@ -9,3 +9,5 @@ pandas
 joblib
 openai
 imblearn
+google-generativeai
+google-auth
