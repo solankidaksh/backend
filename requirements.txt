@@ -3,3 +3,7 @@ uvicorn
 pydantic
 sqlalchemy
 python-dotenv
+numpy
+scikit-learn
+pandas
+joblib
