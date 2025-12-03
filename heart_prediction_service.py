@@ -1,7 +1,6 @@
 # heart_prediction_service.py
-print("--- LOADING NEW V3 heart_prediction_service.py ---")
 import joblib
-import pandas as pd  # <-- Make sure pandas is imported
+import pandas as pd
 from pathlib import Path
 from typing import Dict, Any
 
@@ -33,13 +32,10 @@ class HeartPredictionService:
             return {"error": "Model not loaded", "prediction": None, "confidence": 0.0}
         
         try:
-            # --- THIS IS THE FIX ---
-            # 1. Convert the patient dictionary into a 1-row DataFrame.
-            # 2. This DataFrame *must* have the exact column names
-            #    your model was trained on.
+            # Convert input dict → DataFrame
             df = pd.DataFrame(patient_data, index=[0])
             
-            # Pass the DataFrame directly to the model pipeline
+            # Model prediction
             prediction = self.model.predict(df)[0]
             
             confidence = (
@@ -47,13 +43,35 @@ class HeartPredictionService:
                 if hasattr(self.model, "predict_proba")
                 else 0.0
             )
-            
+
+            # -----------------------------
+            # NEW: Heart Disease Risk Mapping
+            # -----------------------------
+            if prediction == 0:
+                # No heart disease predicted
+                if confidence < 0.40:
+                    risk = "Normal"
+                elif confidence < 0.70:
+                    risk = "Elevated"
+                else:
+                    risk = "Elevated"
+            else:
+                # Heart disease predicted
+                if confidence < 0.40:
+                    risk = "Elevated"
+                elif confidence < 0.70:
+                    risk = "High"
+                else:
+                    risk = "Critical"
+
             return {
                 "prediction": int(prediction),
                 "confidence": confidence,
                 "prediction_text": "Heart Disease" if prediction == 1 else "No Heart Disease",
+                "risk_level": risk,     # <-- NEW FIELD
                 "error": None
             }
+
         except Exception as e:
             return {"error": str(e), "prediction": None, "confidence": 0.0}
 

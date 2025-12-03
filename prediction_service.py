@@ -73,25 +73,43 @@ class PredictionService:
         """Make prediction for a patient"""
         if self.model is None:
             return {"error": "Model not loaded", "prediction": None, "confidence": 0.0}
-        
+            
         try:
             X = self.preprocess_data(patient_data)
-            
-            # Ensure model is valid
             if not hasattr(self.model, 'predict'):
                 return {"error": "Loaded object is not a valid model", "prediction": None, "confidence": 0.0}
             
             prediction = self.model.predict(X)[0]
             confidence = float(max(self.model.predict_proba(X)[0])) if hasattr(self.model, 'predict_proba') else 0.0
-            
+
+            # -----------------------------
+            # NEW: Risk Level Classification
+            # -----------------------------
+            if prediction == 0:
+                # No asthma predicted
+                if confidence < 0.40:
+                    risk = "Low"
+                elif confidence < 0.70:
+                    risk = "Moderate"
+                else:
+                    risk = "High"   # rare but possible
+            else:
+                # Asthma predicted
+                if confidence < 0.40:
+                    risk = "Moderate"
+                elif confidence < 0.70:
+                    risk = "Elevated"
+                else:
+                    risk = "High"
+
             return {
                 "prediction": int(prediction),
                 "confidence": confidence,
-                "prediction_text": "Asthma" if prediction == 1 else "No Asthma"
+                "prediction_text": "Asthma" if prediction == 1 else "No Asthma",
+                "risk_level": risk
             }
+
         except Exception as e:
             return {"error": f"Prediction failed: {str(e)}", "prediction": None, "confidence": 0.0}
 
-
-# Global instance
 prediction_service = PredictionService()

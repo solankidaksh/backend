@@ -21,7 +21,6 @@ class PatientBase(BaseModel):
     Family_History_Asthma: int
     FEV1_FVC_Ratio: float
     Hospital_Visits: int
-    Asthma_Diagnosis: Optional[int] = 0
 
 class PatientCreateInput(BaseModel):
     Age: int
@@ -59,6 +58,7 @@ class PredictionResponse(BaseModel):
     prediction: int
     confidence: float
     prediction_text: str
+    risk_level: str
     error: Optional[str] = None
 
 
@@ -101,4 +101,6 @@ class HeartPredictionResponse(BaseModel):
     prediction: int
     confidence: float
     prediction_text: str
+    risk_level: str
     error: Optional[str] = None
+    
