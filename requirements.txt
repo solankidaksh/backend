@@ -11,3 +11,5 @@ openai
 imblearn
 google-generativeai
 google-auth
+passlib[bcrypt]
+jose
