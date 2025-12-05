@@ -12,14 +12,17 @@ import database
 from prediction_service import prediction_service as asthma_service
 from heart_prediction_service import heart_prediction_service
 
-# --- NEW: OpenAI AI Coach ---
+from auth.auth_router import router as auth_router
+from auth.auth_router import get_current_user
+from database import get_db 
+
+
 from pydantic import BaseModel
 from openai import OpenAI
 
-# -------------------------------
-# FASTAPI INITIALIZATION
-# -------------------------------
 app = FastAPI()
+
+app.include_router(auth_router)
 
 # CORS for frontend
 app.add_middleware(
@@ -34,15 +37,6 @@ app.add_middleware(
 # Create DB tables
 models.Base.metadata.create_all(bind=database.engine)
 
-# DB dependency
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 # -------------------------------
 # ROOT
 # -------------------------------
@@ -56,7 +50,7 @@ def read_root():
 # ============================================================
 
 @app.post("/patients/", response_model=schemas.Patient)
-def create_asthma_patient(patient: schemas.PatientCreateInput, db: Session = Depends(get_db)):
+def create_asthma_patient(patient: schemas.PatientCreateInput, db: Session = Depends(get_db),current_user = Depends(get_current_user)):
     result = asthma_service.predict(patient.dict())
     if result.get("error"):
         raise HTTPException(status_code=500, detail=f"Asthma prediction failed: {result['error']}")
@@ -64,7 +58,7 @@ def create_asthma_patient(patient: schemas.PatientCreateInput, db: Session = Dep
     data = patient.dict()
     data["Asthma_Diagnosis"] = result["prediction"]
 
-    db_patient = models.Patient(**data)
+    db_patient = models.Patient(**data, user_id=current_user.id)
     db.add(db_patient)
     db.commit()
     db.refresh(db_patient)
@@ -136,7 +130,7 @@ def predict_asthma(patient: schemas.PredictionRequest):
 # ============================================================
 
 @app.post("/heart_patients/", response_model=schemas.HeartPatient)
-def create_heart_patient(patient: schemas.HeartPatientCreate, db: Session = Depends(get_db)):
+def create_heart_patient(patient: schemas.HeartPatientCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     result = heart_prediction_service.predict(patient.dict())
     if result.get("error"):
         raise HTTPException(status_code=500, detail="Heart disease prediction failed")
@@ -144,7 +138,7 @@ def create_heart_patient(patient: schemas.HeartPatientCreate, db: Session = Depe
     data = patient.dict()
     data["Heart_Disease_Diagnosis"] = result["prediction"]
 
-    db_patient = models.HeartPatient(**data)
+    db_patient = models.HeartPatient(**data, user_id=current_user.id)
     db.add(db_patient)
     db.commit()
     db.refresh(db_patient)
